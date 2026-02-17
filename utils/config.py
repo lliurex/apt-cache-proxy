@@ -44,10 +44,18 @@ def save_config_value(key, value):
     """Update a single config value and save to disk"""
     global CONFIG
     try:
+        # If running in Docker, we don't save to config.json
+        if is_docker():
+            logger.warning("Running in Docker, skipping save to config.json. Configuration is managed via environment variables.")
+            # Still update memory for runtime changes if needed, but they won't persist across restarts
+            with config_lock:
+                CONFIG[key] = value
+                if key == 'log_level':
+                    logger.setLevel(getattr(logging, value))
+            return True
+
         config_path = get_config_path()
         
-        # Read current file first to preserve comments/structure if possible (though json lib won't)
-        # or just use current memory state? Better to read fresh to avoid overwriting external changes
         if config_path.exists():
             with open(config_path, 'r') as f:
                 current_disk_config = json.load(f)
@@ -73,28 +81,56 @@ def save_config_value(key, value):
         return False
 
 def load_config():
-    """Load configuration from JSON file"""
+    """Load configuration from JSON file or Environment Variables"""
     global CONFIG
     try:
-        config_path = get_config_path()
+        new_config = DEFAULT_CONFIG.copy()
         
-        if not config_path.exists():
-            logger.info(f"Config file not found at {config_path}, creating default.")
-            with open(config_path, 'w') as f:
-                json.dump(DEFAULT_CONFIG, f, indent=2)
-            new_config = DEFAULT_CONFIG
+        if is_docker():
+            logger.info("Running in Docker environment. Loading configuration from environment variables.")
+            
+            # Map environment variables to config keys
+            # Environment variables should be prefixed with APT_PROXY_ or just match the key in uppercase
+            
+            # Helper to get env var with fallback
+            def get_env(key, default):
+                return os.environ.get(f"APT_PROXY_{key.upper()}", os.environ.get(key.upper(), default))
+
+            new_config['host'] = '0.0.0.0'
+            new_config['port'] = 8080
+            new_config['storage_path'] = 'storage'
+            new_config['database_path'] = 'data/stats.db'
+            new_config['cache_days'] = int(get_env('cache_days', 7))
+
+            ## THIS STILL NEEDS TO BE IN THE JSON
+            retention = get_env('cache_retention_enabled', 'True')
+            new_config['cache_retention_enabled'] = retention.lower() in ('true', '1', 'yes')
+            
+            new_config['log_level'] = get_env('log_level', 'INFO')
+
+            ## THIS STILL NEEDS TO BE IN THE JSON
+            passthrough = get_env('passthrough_mode', 'True')
+            new_config['passthrough_mode'] = passthrough.lower() in ('true', '1', 'yes')
+            
+            new_config['admin_token'] = get_env('admin_token', 'changeme_to_secure_random_string')
+            
         else:
-            with open(config_path, 'r') as f:
-                new_config = json.load(f)
+            config_path = get_config_path()
+            
+            if not config_path.exists():
+                logger.info(f"Config file not found at {config_path}, creating default.")
+                with open(config_path, 'w') as f:
+                    json.dump(DEFAULT_CONFIG, f, indent=2)
+                new_config = DEFAULT_CONFIG
+            else:
+                with open(config_path, 'r') as f:
+                    file_config = json.load(f)
+                    new_config.update(file_config)
             
         with config_lock:
             CONFIG.clear()
             CONFIG.update(new_config)
             
-            if is_docker():
-                CONFIG['storage_path'] = 'storage'
-                CONFIG['database_path'] = 'data/stats.db'
-
             # Ensure storage path exists
             storage_path_str = CONFIG.get('storage_path', 'storage')
             if os.path.isabs(storage_path_str):
@@ -109,7 +145,7 @@ def load_config():
             # Update log level if changed
             logger.setLevel(getattr(logging, CONFIG.get('log_level', 'INFO')))
             
-        logger.info(f"Configuration loaded successfully from {config_path}")
+        logger.info(f"Configuration loaded successfully.")
         return True
     except Exception as e:
         logger.error(f"Failed to load config: {e}")

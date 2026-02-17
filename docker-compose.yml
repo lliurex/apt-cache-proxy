@@ -8,5 +8,9 @@ services:
     volumes:
       # Persist the downloaded cache packages
       - ./storage:/app/storage
-      # Persist the SQLite statistics database and config
+      # Persist the SQLite statistics database
       - ./data:/app/data
+    environment:
+      # Example: Set configuration via environment variables for Docker
+      # These will override any values in config.json inside the container
+      - APT_PROXY_ADMIN_TOKEN=supersecret_docker_token
