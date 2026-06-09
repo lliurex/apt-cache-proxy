@@ -20,19 +20,25 @@ def get_peers_urls(distro, package_path):
         for url in PEERS_CACHE[distro]:
             # Validation: Check if url is reachable and the availability of tne package in remote cache
             if validate_peer(url, distro, package_name):
-                valid_urls.append(url)
+                # concatenate distro name to url to get a valid 'upstream' mirror
+                valid_urls.append(url+"/"+distro)
 
     return valid_urls
 
 def validate_peer(url, distro, package_name):
     """Check if the peer URL is reachable and package is available from peers cache"""
+    url_query=url+"/api/cache/search"
+    try:
+        resp = requests.get(url_query, params= {"q": package_name},timeout=3, allow_redirects=True)
+        if resp.status_code < 400 :
+            resp_data_list = resp.json()
+            # Validation: check distro name
+            for resp_data in resp_data_list:
+                if ("distro" in resp_data) and (distro == resp_data["distro"]):
+                    return True
 
-    resp = requests.get(url, params= {"q": package_name},timeout=3, allow_redirects=True)
-    if resp.status_code < 400 :
-        resp_data = resp.json()
-        # Validation: check distro name
-        if ("distro" in resp_data) and (distro == resp_data["distro"]):
-            return True
+    except Exception as e:
+        logger.error(f"Error validating peer: {e}")
 
     return False
 
