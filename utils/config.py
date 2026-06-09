@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
   "cache_retention_enabled": True,
   "log_level": "INFO",
   "passthrough_mode": True,
+  "peers_enabled": True,
   "admin_token": "changeme_to_secure_random_string"
 }
 
