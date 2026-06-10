@@ -5,16 +5,26 @@ from utils.logger import logger
 from pathlib import Path
 from services.mirrors import get_all_mirrors
 
+PEERS_CACHE = {} 
 # In-memory support for peers
 # Structure: {'distro': [urls ...]}
 
-PEERS_CACHE = {} 
 peers_lock = Lock()
 
 def get_peers_urls(distro, package_path):
     """Get urls of peers where package is already cached"""
     valid_urls = []
-    package_name=Path(package_path).stem
+    allowed_suffixes = [ '.deb' ]
+    # Validation: 
+    # peers are designed to be dynamically configured and automatically approved
+    # to avoid malicious code injection, we will restrict its use to packages only.
+    # Metadata and package lists will be downloaded directly from upstream to ensure
+    # that packages are properly verified.
+    path_object = Path(package_path)
+    if path_object.suffix not in allowed_suffixes:
+        return []
+
+    package_name=path_object.name
     # Validation: Check distro availability in peers list
     if distro in PEERS_CACHE:
         for url in PEERS_CACHE[distro]:
@@ -115,4 +125,24 @@ def get_peers_management():
     """Get ALL peers for management UI"""
     with peers_lock:
         return PEERS_CACHE.copy()
+
+def get_distros_by_peer(url):
+    current_distros = []
+    for distro in PEERS_CACHE:
+        if url in PEERS_CACHE[distro] :
+            current_distros.append(distro)
+
+    return current_distros
+
+def update_distros_by_peer(url, distros):
+    current_distros = get_distros_by_peer(url)
+    for current_distro in current_distros:
+        if not current_distro in distros:
+            del_url_from_peer(distro, [current_distro])
+
+    for distro in distros:
+        if url not in PEERS_CACHE[distro]:
+            add_url_to_peer(distro, [url])
+
+    return True
 
