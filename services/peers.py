@@ -121,10 +121,9 @@ def delete_peer(distro):
         logger.error(f"Error deleting peer: {e}")
         return False
 
-def get_peers_management():
-    """Get ALL peers for management UI"""
-    with peers_lock:
-        return PEERS_CACHE.copy()
+def get_all_peers():
+    """Get ALL peers"""
+    return PEERS_CACHE
 
 def get_distros_by_peer(url):
     current_distros = []
