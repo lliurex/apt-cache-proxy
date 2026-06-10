@@ -87,7 +87,7 @@ def add_url_to_peer(distro, urls):
                     current_data.append(url)
             
             PEERS_CACHE[distro] = current_data
-            logger.info(f"Updated peer: {distro} -> {current_data}")
+            logger.info(f"Updated peers urls for {distro} -> {current_data}")
             return True
     except Exception as e:
         logger.error(f"Error updating peer: {e}")
@@ -102,7 +102,7 @@ def add_peer(distro, urls):
     try:
         with peers_lock:
             PEERS_CACHE[distro] = urls
-            logger.info(f"Added peer: {distro} -> {urls}")
+            logger.info(f"Added peers for {distro} -> {urls}")
             return True
     except Exception as e:
         logger.error(f"Error adding peer: {e}")
@@ -115,7 +115,7 @@ def delete_peer(distro):
             if distro in PEERS_CACHE:
                 del PEERS_CACHE[distro]
                 
-            logger.info(f"Deleted peer: {distro}")
+            logger.info(f"Deleted ALL peers for {distro}")
             return True
     except Exception as e:
         logger.error(f"Error deleting peer: {e}")
@@ -135,13 +135,19 @@ def get_distros_by_peer(url):
 
 def update_distros_by_peer(url, distros):
     current_distros = get_distros_by_peer(url)
-    for current_distro in current_distros:
-        if not current_distro in distros:
-            del_url_from_peer(distro, [current_distro])
+    try:
+        for current_distro in current_distros:
+            if not current_distro in distros:
+                del_url_from_peer(distro, [current_distro])
 
-    for distro in distros:
-        if url not in PEERS_CACHE[distro]:
-            add_url_to_peer(distro, [url])
+        for distro in distros:
+            if url not in PEERS_CACHE[distro]:
+                add_url_to_peer(distro, [url])
 
-    return True
+        return True
+
+    except Exception as e:
+        logger.error(f"Error updating peer: {e}")
+        return False
+
 
