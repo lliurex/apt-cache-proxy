@@ -59,7 +59,7 @@ def api_peers_del():
 def api_peers_distro_get(distro):
     """Get url peer list for distro"""
 
-    return jsonify(get_all_mirrors()[distro])
+    return jsonify(get_all_peers()[distro])
         
 @routes_peers.route('/api/peers/<distro>', methods=['PUT'])
 def api_peers_distro_put(distro):
