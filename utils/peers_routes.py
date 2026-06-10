@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request, jsonify
 from utils.routes  import check_auth
-from services.peers import get_all_peers, add_url_to_peer, del_url_from_peer
+from services.peers import get_all_peers, add_url_to_peer, del_url_from_peer, update_distros_by_peer
 from services.mirrors import get_all_mirrors
 
 routes_peers = Blueprint('routes_peers', __name__)
@@ -58,9 +58,12 @@ def api_peers_del():
 @routes_peers.route('/api/peers/<distro>', methods=['GET'])
 def api_peers_distro_get(distro):
     """Get url peer list for distro"""
+    peers = get_all_peers()
+    if distro in peers:
+        return jsonify(peers[distro])
+    
+    return []
 
-    return jsonify(get_all_peers()[distro])
-        
 @routes_peers.route('/api/peers/<distro>', methods=['PUT'])
 def api_peers_distro_put(distro):
     """Add/update url peer list for distro"""
