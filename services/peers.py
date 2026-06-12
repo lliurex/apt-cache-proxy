@@ -1,5 +1,6 @@
 import json
 import requests
+import re
 from threading import Lock
 from utils.logger import logger
 from pathlib import Path
@@ -11,17 +12,28 @@ PEERS_CACHE = {}
 
 peers_lock = Lock()
 
-def get_peers_urls(distro, package_path):
-    """Get urls of peers where package is already cached"""
-    valid_urls = []
-    allowed_suffixes = [ '.deb' ]
+def valid_peer_filename(path_object):
     # Validation: 
     # peers are designed to be dynamically configured and automatically approved
     # to avoid malicious code injection, we will restrict its use to packages only.
     # Metadata and package lists will be downloaded directly from upstream to ensure
     # that packages are properly verified.
+    peers_blacklist = get_config("peers_blacklist")
+    path_components = { "fullpath": str(path_object), "name": path_object.name, "stem": path_object.stem, "suffix": path_object.suffix }
+    for key in peers_blacklist:
+        path_component = path_components[key]
+        for reg_exp in peers_blacklist[key]:
+            if re.match(reg_exp, path_component):
+                return False
+
+    return True
+
+def get_peers_urls(distro, package_path):
+    """Get urls of peers where package is already cached"""
+    valid_urls = []
     path_object = Path(package_path)
-    if path_object.suffix not in allowed_suffixes:
+
+    if not valid_peer_filename(path_object):
         return []
 
     package_name=path_object.name
@@ -135,19 +147,25 @@ def get_distros_by_peer(url):
 
 def update_distros_by_peer(url, distros):
     current_distros = get_distros_by_peer(url)
+    logger.info(f"INFO: {url} {distros}")
     try:
         for current_distro in current_distros:
             if not current_distro in distros:
-                del_url_from_peer(distro, [current_distro])
+                del_url_from_peer(current_distro, [url])
 
+    except Exception as e:
+        logger.error(f"Error deleting peer: {e}")
+        return False
+
+    try:
         for distro in distros:
-            if url not in PEERS_CACHE[distro]:
+            if (distro not in PEERS_CACHE) or (url not in PEERS_CACHE[distro]):
                 add_url_to_peer(distro, [url])
 
         return True
 
     except Exception as e:
-        logger.error(f"Error updating peer: {e}")
+        logger.error(f"Error Adding peer: {e}")
         return False
 
 
