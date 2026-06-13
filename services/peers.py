@@ -5,6 +5,7 @@ from threading import Lock
 from utils.logger import logger
 from pathlib import Path
 from services.mirrors import get_all_mirrors
+from utils.config import get_config
 
 PEERS_CACHE = {} 
 # In-memory support for peers
