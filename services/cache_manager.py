@@ -329,6 +329,11 @@ def manual_cache_package(distro, package_path):
         mirrors = mirrors_config[upstream_key]
         if isinstance(mirrors, str):
             mirrors = [mirrors]
+
+        # insert in mirrors the urls of available peers with the required package in cache (if any)
+        peers_urls = get_peers_urls(distro, package_path)
+        for url in peers_urls:
+            mirrors.insert(0, url)
         
         upstream_urls = [f"{mirror}/{package_path}" for mirror in mirrors]
         
