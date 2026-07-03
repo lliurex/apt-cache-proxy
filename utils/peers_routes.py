@@ -70,6 +70,7 @@ def api_peers_distro_put(distro):
     if not check_auth():
         return Response("Unauthorized", status=401)
 
+    data = request.get_json()
     urls = data.get('urls')
 
     if not urls:
