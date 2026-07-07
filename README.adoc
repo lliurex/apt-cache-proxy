@@ -68,9 +68,14 @@ Each key indicates the part of the full pathname of the package file to apply th
 
 === New API Endpoints
 Default APT proxy API has been extended to support peers functionality.
+
 ==== Public Endpoints
+
 * 
 
+==== Protected Endpoints (Require Auth)
+
+*
 
 
 Mechanisms for discovery and detection are also implementged using mDNS via Python Zeroconf. The functionality is not directly implemented in the apt-cache-proxy code; it's done through a helper service that interacts with the proxy via the new API.
