@@ -4,9 +4,11 @@ import logging
 from pathlib import Path
 from threading import Lock
 from utils.logger import logger
+from utils.args_manager import args_get_basedir, args_get_configpath
 
 # Global configuration
-BASE_DIR = Path(__file__).resolve().parent.parent
+#BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = args_get_configpath()
 CONFIG = {}
 config_lock = Lock()
 
@@ -34,6 +36,10 @@ if is_docker():
 
 def get_config_path():
     """Returns the path to the config file, ensuring the directory exists."""
+    args_config = args_get_configpath()
+    if args_config:
+        return args_config
+
     data_dir = BASE_DIR / 'data'
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir / 'config.json'
