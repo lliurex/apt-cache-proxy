@@ -39,6 +39,18 @@ This is a new feature to improve performance and reduce bandwith when multiple p
 
 The main idea is to check whether the packages are available in the cache of other computers on the LAN that are also running the proxy, avoiding the need to download them from upstream mirrors. These neighboring proxies ("peers" in advance) would be detected dynamically and kept in memory at runtime, without persistence.
 
+=== Key Points
+
+* peers are not persistent. There is not a peers database, only a volatile memory dictionary 'PEERS_CACHE'. The structure is {'distro': [urls ...]}
+ * distro is the name/key of the peers mirror, and it must be an approved mirror in the proxy. Unknow distros are not allowed to act as peers.
+ * urls are the 'base URI' of the peer proxy, eg: http://192.168.10.20:8080'.
+
+* peers are used as an alternative upstream url mirror. The full URI to access the peer is "url" / "distro". Downloaded files are locally cached, just like when accessing a genuine upstream server
+
+* There are filtering rules to download files from a peer (see Security section below)
+
+* There is a 
+
 === Security
 apt provides security mechanisms based on the digital signatures of the "Release" files in the repositories to ensure the authenticity of upstream mirrors.
 
@@ -54,9 +66,12 @@ Each key indicates the part of the full pathname of the package file to apply th
 * stem: default empty -> []
 * suffix: default -> [ "^\\.gpg$", "^\\.md5$", "^\\.sha(\\d){0,3}$" ]
 
+=== New API Endpoints
+Default APT proxy API has been extended to support peers functionality.
+==== Public Endpoints
+* 
 
 
 
-
-Mechanisms for discovery and detection will also be needed (my idea is to use mDNS via Python Zeroconf). I don't yet have a complete implementation of this part. Furthermore, it wouldn't be essential to include this functionality directly in the apt-cache-proxy code; it could be done through a helper service that interacts with the proxy via the new API.
+Mechanisms for discovery and detection are also implementged using mDNS via Python Zeroconf. The functionality is not directly implemented in the apt-cache-proxy code; it's done through a helper service that interacts with the proxy via the new API.
 
