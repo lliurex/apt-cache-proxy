@@ -1,0 +1,25 @@
+= Apt Cache Proxy with Peers Support
+Luis Garcia
+:compat-mode:
+:toc:
+:icons: font
+:toc-title: Index
+:toclevels: 3
+:doctype: article
+:experimental:
+:icons: font
+:sectanchors:
+:sectlinks:
+:sectnums:
+:imagesdir: ./images
+
+== Overview
+
+This is the LliureX fork of APT Cache Proxy of felix-homelab (https://github.com/felix-homelab/apt-cache-proxy).
+APT Cache Proxy is a lightweight APT caching proxy server written in Python. It caches packages from upstream mirrors to save bandwidth and speed up package installation in local network scenarios. It can be used as drop-in replacement for `apt-cacher-ng` in apt configuration.
+The documentation of the original project can be accessed in this link:README-apt-cache-proxy.md[link]
+
+The main contributions of LliureX to the original code are:
+* Peer support
+* Zeroconf/Avahi support both to advertise the service and to detect other proxies 
+
