@@ -16,6 +16,9 @@ from utils.peers_routes import routes_peers
 app = Flask(__name__)
 app.register_blueprint(routes)
 
+# Load config at module level to ensure it's ready
+load_config()
+
 if get_config('peers_enabled', True):
     app.register_blueprint(routes_peers)
 
@@ -141,8 +144,6 @@ def handle_all(path):
             
     return Response(f"Unsupported request: {path}", status=404)
 
-# Load config at module level to ensure it's ready
-load_config()
 init_db()
 load_stats_from_db()
 load_mirrors_from_db()
