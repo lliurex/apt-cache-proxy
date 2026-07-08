@@ -121,6 +121,11 @@
             <mxGeometry height="50" width="90" x="418.18" y="280" as="geometry" />
           </mxCell>
         </UserObject>
+        <UserObject label="&lt;div align=&quot;center&quot;&gt;&lt;font style=&quot;color: rgb(150, 115, 166);&quot;&gt;&lt;span style=&quot;font-size: 14px; text-wrap-mode: nowrap;&quot;&gt;cache hit&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" placeholders="1" name="Variable" id="btYoq_Wdih8H-uIBX5Hj-1">
+          <mxCell parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;overflow=hidden;fontColor=#DF1111;" vertex="1">
+            <mxGeometry height="50" width="90" x="498.18" y="390" as="geometry" />
+          </mxCell>
+        </UserObject>
       </root>
     </mxGraphModel>
   </diagram>
