@@ -39,6 +39,9 @@ This is a new feature to improve performance and reduce bandwith when multiple p
 
 The main idea is to check whether the packages are available in the cache of other computers on the LAN that are also running the proxy, avoiding the need to download them from upstream mirrors. These neighboring proxies ("peers" in advance) would be detected dynamically and kept in memory at runtime, without persistence.
 
+image::apt-cache-peer.svg[]
+
+
 === Key Points
 
 * Peers are not persistent. There is not a peers database, only a volatile memory dictionary 'PEERS_CACHE'. The structure is {'distro': [urls ...]}
