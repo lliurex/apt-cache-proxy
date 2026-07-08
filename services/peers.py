@@ -1,11 +1,13 @@
 import json
 import requests
 import re
+import os
 from threading import Lock
 from utils.logger import logger
 from pathlib import Path
-from services.mirrors import get_all_mirrors
+from services.mirrors import get_all_mirrors, get_upstream_key
 from utils.config import get_config
+
 
 PEERS_CACHE = {} 
 # In-memory support for peers
@@ -169,4 +171,33 @@ def update_distros_by_peer(url, distros):
         logger.error(f"Error Adding peer: {e}")
         return False
 
+
+def distro_file_search(search_data={}):
+    """Multiple search for cached files in specific distro"""
+    result_data={}
+    storage_path_str = get_config('storage_path_resolved')
+    if not storage_path_str:
+        return result_data
+
+    mirrors_config = get_all_mirrors()
+
+    for distro in search_data:
+        result_data[distro]=[]
+        # Check if this distro is configured
+
+        if distro in mirrors_config:
+            # It's a managed distro
+            storage_path = Path(storage_path_str)
+            cache_path = storage_path / distro
+
+            for root, dirs, files in os.walk(cache_path):
+                if files:
+                    for filename in files:
+                        # We store files as hash_filename, so we need to check the real filename part
+                        # Format: {hash}_{filename}
+                        real_name = filename.split("_",1)[-1]
+                        if real_name in search_data[distro]:
+                            result_data[distro].append(real_name)
+
+    return result_data
 
