@@ -84,6 +84,8 @@ Default APT proxy API has been extended to support peers functionality.
 
 * /api/mirrors : Get all approved mirrors
 
+* /api/search/<distro> : Multiple package search for specific distro
+
 ==== Protected Endpoints (Require Auth)
 
 * /api/peers : Manage peers (PUT, DELETE)
