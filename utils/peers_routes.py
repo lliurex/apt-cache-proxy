@@ -1,6 +1,6 @@
 from flask import Blueprint, Response, request, jsonify
 from utils.routes  import check_auth
-from services.peers import get_all_peers, add_url_to_peer, del_url_from_peer, update_distros_by_peer
+from services.peers import get_all_peers, add_url_to_peer, del_url_from_peer, update_distros_by_peer, distro_file_search
 from services.mirrors import get_all_mirrors
 
 routes_peers = Blueprint('routes_peers', __name__)
@@ -102,4 +102,18 @@ def api_peers_distro_del(distro):
 def api_mirrors_get():
     """Get all approved mirrors"""
     return jsonify(get_all_mirrors())
+
+@routes_peers.route('/api/search/<distro>', methods=['GET'])
+def api_search_distro(distro):
+    """Multiple package search in specific distro"""
+    data = request.get_json()
+    packages = data.get('packages')
+    if not packages:
+        return Response("Missing packages", status=400)
+
+    if isinstance(packages, str):
+        packages = [packages]
+
+    return jsonify(distro_file_search({distro : packages}))
+
 
