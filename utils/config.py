@@ -8,7 +8,7 @@ from utils.args_manager import args_get_basedir, args_get_configpath
 
 # Global configuration
 #BASE_DIR = Path(__file__).resolve().parent.parent
-BASE_DIR = args_get_configpath()
+BASE_DIR = args_get_basedir()
 CONFIG = {}
 config_lock = Lock()
 
