@@ -41,15 +41,18 @@ The main idea is to check whether the packages are available in the cache of oth
 
 === Key Points
 
-* peers are not persistent. There is not a peers database, only a volatile memory dictionary 'PEERS_CACHE'. The structure is {'distro': [urls ...]}
- * distro is the name/key of the peers mirror, and it must be an approved mirror in the proxy. Unknow distros are not allowed to act as peers.
- * urls are the 'base URI' of the peer proxy, eg: http://192.168.10.20:8080'.
+* Peers are not persistent. There is not a peers database, only a volatile memory dictionary 'PEERS_CACHE'. The structure is {'distro': [urls ...]}
+ * distro is the name/key of the peers mirror, and it must be an approved mirror in the proxy. Unknow distros are not allowed to act as peers
+ * urls are the 'base URI' of the peer proxy, eg: http://192.168.10.20:8080'
+ * full URI to access the peer is "url" / "distro"
 
-* peers are used as an alternative upstream url mirror. The full URI to access the peer is "url" / "distro". Downloaded files are locally cached, just like when accessing a genuine upstream server
+* Peers are used as an alternative upstream url mirror directly by the proxy to get the required file. Files are served by the proxy to clients in a transparent manner, without redirections or other artifacts.
+
+* Current peer list can be retrieved from the proxy (see New API section below) but peers info is not intended to be shared between proxys. There are not recursive package searches, nor indirect connections to peers. This behaviour minimizes the risk of loops or unintended hops between networks.
 
 * There are filtering rules to download files from a peer (see Security section below)
 
-* There is a 
+* The application API has been extended to support peers management, but an specific web interface to administrate peers has not been developed yet.
 
 === Security
 apt provides security mechanisms based on the digital signatures of the "Release" files in the repositories to ensure the authenticity of upstream mirrors.
@@ -67,16 +70,24 @@ Each key indicates the part of the full pathname of the package file to apply th
 * suffix: default -> [ "^\\.gpg$", "^\\.md5$", "^\\.sha(\\d){0,3}$" ]
 
 === New API Endpoints
+
 Default APT proxy API has been extended to support peers functionality.
 
-==== Public Endpoints
+==== Public Endpoints ('GET')
 
-* 
+* /api/peers : Retrieve current peer list
+
+* /api/peers/<distro> : Get url peer list for specific distro
+
+* /api/mirrors : Get all approved mirrors
 
 ==== Protected Endpoints (Require Auth)
 
-*
+* /api/peers : Manage peers (PUT, DELETE)
 
+* /api/peers/<distro> : Manage peers list for specific distro (PUT, DELETE)
 
-Mechanisms for discovery and detection are also implementged using mDNS via Python Zeroconf. The functionality is not directly implemented in the apt-cache-proxy code; it's done through a helper service that interacts with the proxy via the new API.
+== Zeroconf/Avahi support
+
+Mechanisms for discovery and detection are also implemented using mDNS via Python Zeroconf. The functionality is not directly implemented in the apt-cache-proxy code; it's done through a helper service that interacts with the proxy via the new API.
 
