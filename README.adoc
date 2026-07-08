@@ -47,7 +47,7 @@ image::apt-cache-peer.svg[]
 * Peers are not persistent. There is not a peers database, only a volatile memory dictionary 'PEERS_CACHE'. The structure is {'distro': [urls ...]}
  * distro is the name/key of the peers mirror, and it must be an approved mirror in the proxy. Unknow distros are not allowed to act as peers
  * urls are the 'base URI' of the peer proxy, eg: http://192.168.10.20:8080'
- * full URI to access the peer is "url" / "distro"
+ * full URI to access the peer is "url" / "distro", eg: http://192.168.10.20:8080/noble
 
 * Peers are used as an alternative upstream url mirror directly by the proxy to get the required file. Files are served by the proxy to clients in a transparent manner, without redirections or other artifacts.
 
